@@ -10,14 +10,14 @@ $ docker run -d \
  -e DB_HOST=postgresql.example.com \
  -e DB_USER=admin \
  -e DB_PASSWORD=mypassword \
- brainsam/pgbouncer:latest
+ andonisan/pgbouncer:latest
 ```
 Or You can mount config file into docker container:
 ```bash
 $ docker run -d \
  --name pgbouncer \
  -v pgbouncer-config-file:/etc/pgbouncer/pgbouncer.ini \
- brainsam/pgbouncer:latest
+ andonisan/pgbouncer:latest
 ```
 
 ## Installation
