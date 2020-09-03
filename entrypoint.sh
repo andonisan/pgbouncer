@@ -6,6 +6,18 @@ PG_LOG=/var/log/pgbouncer
 PG_CONFIG_DIR=/etc/pgbouncer
 PG_USER=postgres
 
+# Write the password with MD5 encryption, to avoid printing it during startup.
+# Notice that `docker inspect` will show unencrypted env variables.
+if [ -n "$DB_USER" -a -n "$DB_PASSWORD" ] && ! grep -q "^\"$DB_USER\"" ${PG_CONFIG_DIR}/userlist.txt; then
+  if [ "$AUTH_TYPE" != "plain" ]; then
+     pass="md5$(echo -n "$DB_PASSWORD$DB_USER" | md5sum | cut -f 1 -d ' ')"
+  else
+     pass="$DB_PASSWORD"
+  fi
+  echo "\"$DB_USER\" \"$pass\"" >> ${PG_CONFIG_DIR}/userlist.txt
+  echo "Wrote authentication credentials to ${PG_CONFIG_DIR}/userlist.txt"
+fi
+
 if [ ! -f ${PG_CONFIG_DIR}/pgbouncer.ini ]; then
   echo "create pgbouncer config in ${PG_CONFIG_DIR}"
   mkdir -p ${PG_CONFIG_DIR}
@@ -33,7 +45,7 @@ ${UNIX_SOCKET_GROUP:+unix_socket_group = ${UNIX_SOCKET_GROUP}\n}\
 ${USER:+user = ${USER}\n}\
 ${AUTH_FILE:+auth_file = ${AUTH_FILE}\n}\
 ${AUTH_HBA_FILE:+auth_hba_file = ${AUTH_HBA_FILE}\n}\
-auth_type = ${AUTH_TYPE:-any}
+auth_type = ${AUTH_TYPE:-md5}
 ${AUTH_QUERY:+auth_query = ${AUTH_QUERY}\n}\
 ${POOL_MODE:+pool_mode = ${POOL_MODE}\n}\
 ${MAX_CLIENT_CONN:+max_client_conn = ${MAX_CLIENT_CONN}\n}\
