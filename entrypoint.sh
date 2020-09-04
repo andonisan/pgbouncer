@@ -6,6 +6,10 @@ PG_LOG=/var/log/pgbouncer
 PG_CONFIG_DIR=/etc/pgbouncer
 PG_USER=postgres
 
+if [ ! -f ${PG_CONFIG_DIR}/pgbouncer.ini ]; then
+  echo "create pgbouncer config in ${PG_CONFIG_DIR}"
+  mkdir -p ${PG_CONFIG_DIR}
+
 # Write the password with MD5 encryption, to avoid printing it during startup.
 # Notice that `docker inspect` will show unencrypted env variables.
 if [ -n "$DB_USER" -a -n "$DB_PASSWORD" ] && ! grep -q "^\"$DB_USER\"" ${PG_CONFIG_DIR}/userlist.txt; then
@@ -17,10 +21,6 @@ if [ -n "$DB_USER" -a -n "$DB_PASSWORD" ] && ! grep -q "^\"$DB_USER\"" ${PG_CONF
   echo "\"$DB_USER\" \"$pass\"" >> ${PG_CONFIG_DIR}/userlist.txt
   echo "Wrote authentication credentials to ${PG_CONFIG_DIR}/userlist.txt"
 fi
-
-if [ ! -f ${PG_CONFIG_DIR}/pgbouncer.ini ]; then
-  echo "create pgbouncer config in ${PG_CONFIG_DIR}"
-  mkdir -p ${PG_CONFIG_DIR}
 
   printf "\
 #pgbouncer.ini
